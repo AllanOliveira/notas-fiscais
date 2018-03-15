@@ -1,5 +1,5 @@
 import {handleStatus,log} from '../utils/promise-helpers.js';
-import {partialaze,compose} from '../utils/operations.js';
+import {partialaze,pipe} from '../utils/operations.js';
 
 const API = '/notas';
 
@@ -15,21 +15,22 @@ const sumItens = code => {
 
 export const notaService = {
     listAll(){
-        return fetch(API).then(handleStatus)
+        return fetch(API)
+                .then(handleStatus)
+                .catch(erro => {
+                    console.log(erro);
+                    return Promise.reject('Não foi possível obter as notas fiscais');
+                });;
     },
     sumItens(code){
-       /*const filterItems = partialaze(filterItensByCode,code);
-       return this.listAll()
-                        .then(getItensFromNotas)
-                        .then(filterItems)
-                        .then(sumItensValue);*/
 
-        const sumItens = compose(
-                            sumItensValue,
-                            partialaze(filterItensByCode,code),
-                            getItensFromNotas);
+        const sumItens = pipe(
+            getItensFromNotas,
+            partialaze(filterItensByCode,code),
+            sumItensValue
+        );
                             
-        return this.listAll().then(sumItens)
+        return this.listAll().then(sumItens);
 
     }
 }
